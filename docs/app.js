@@ -49,7 +49,7 @@ const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
 // log once the first frame has actually been put on screen
 requestAnimationFrame(() => requestAnimationFrame(() => dlog('first frame on screen after ' + lived())));
 
-let tool = 'marker';
+let tool = 'crayon';
 let color = COLORS[0];
 let sizeIdx = 1;
 let sticker = 0;
@@ -390,7 +390,7 @@ COLORS.forEach((c, i) => {
   b.addEventListener('pointerdown', () => {
     setInk(c);
     colorsEl.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b));
-    if (tool === 'eraser') selectTool('marker');  // picking a colour while erasing means "I want to draw"
+    if (tool === 'eraser') selectTool('crayon');  // picking a colour while erasing means "I want to draw"
   });
   colorsEl.appendChild(b);
 });

@@ -4,12 +4,12 @@
   --ink: #e8413c;
   --gap: 12px;
   /* sized so both rails fit a tablet in either orientation */
-  --tb: clamp(50px, calc((100dvh - 100px) / 7.3), 86px);
+  --tb: clamp(50px, calc((100dvh - 90px) / 6.3), 86px);
   --sw: clamp(36px, calc((100dvh - 160px) / 8), 60px);
 }
 @media (orientation: portrait) {
   :root {
-    --tb: clamp(50px, calc((100vw - 100px) / 7.3), 86px);
+    --tb: clamp(50px, calc((100vw - 90px) / 6.3), 86px);
     --sw: clamp(36px, calc((100vw - 160px) / 8), 60px);
   }
 }

@@ -7,9 +7,9 @@ first load.
 
 ## What's on screen
 
-- **Left: tools.** Marker, crayon (with a paper-grain texture), rainbow (changes
-  colour as you draw), stars (stamps stars along the line), stickers, paint bucket
-  (fills an enclosed shape), eraser.
+- **Left: tools.** Paint bucket (fills an enclosed shape), crayon (with a paper-grain
+  texture; selected when the app opens), rainbow (changes colour as you draw), stars
+  (stamps stars along the line), stickers, eraser. The marker was removed 2026-11-20.
 - **Right: 12 colours, 3 brush sizes, undo, pictures, new page.**
 - **Stickers:** with the Stickers tool on, the colours change to 10 animal faces
   (panda, bunny, fox, owl, koala, pig, otter, seal, tiger, lion). Touch the page and
@@ -20,7 +20,7 @@ first load.
 
 ## Toddler-proofing
 
-- **New page** and **delete picture** only work if you *hold* the button (an orange
+- **New page** (the broom) and **delete picture** only work if you *hold* the button (an orange
   ring fills up). A quick tap just wiggles it.
 - Nothing is ever lost by accident: every page saves itself automatically and shows
   up under **Pictures**. Tap a picture to keep drawing on it.

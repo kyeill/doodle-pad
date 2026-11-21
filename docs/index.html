@@ -14,14 +14,17 @@
 <div id="app">
 
   <nav id="tools" class="rail" aria-label="Tools">
-    <button class="tool on" data-tool="marker" aria-label="Marker">
-      <svg viewBox="0 0 64 64"><g transform="rotate(40 32 32)" stroke="#3d3a4f" stroke-width="3" stroke-linejoin="round">
-        <path d="M26 20 L29 8 h6 L38 20 Z" fill="var(--ink)"/>
-        <rect x="23" y="20" width="18" height="36" rx="5" fill="#fff"/>
-        <rect x="23" y="20" width="18" height="10" fill="var(--ink)"/>
-      </g></svg>
+    <button class="tool" data-tool="fill" aria-label="Paint bucket">
+      <svg viewBox="0 0 64 64" stroke="#3d3a4f" stroke-width="3" stroke-linejoin="round">
+        <g transform="rotate(-18 30 36)">
+          <path d="M16 26 C16 9, 42 9, 42 26" fill="none"/>
+          <path d="M14 26 h30 l-4 26 a4 4 0 0 1 -4 3.5 h-14 a4 4 0 0 1 -4 -3.5 Z" fill="#fff"/>
+          <ellipse cx="29" cy="26" rx="15" ry="5" fill="var(--ink)"/>
+        </g>
+        <path d="M53 32 C57 39 59 42 59 46 a6 6 0 0 1 -12 0 C47 42 49 39 53 32 Z" fill="var(--ink)"/>
+      </svg>
     </button>
-    <button class="tool" data-tool="crayon" aria-label="Crayon">
+    <button class="tool on" data-tool="crayon" aria-label="Crayon">
       <svg viewBox="0 0 64 64"><g transform="rotate(40 32 32)" stroke="#3d3a4f" stroke-width="3" stroke-linejoin="round">
         <path d="M24 22 L32 5 L40 22 Z" fill="var(--ink)"/>
         <rect x="24" y="22" width="16" height="36" rx="2" fill="var(--ink)"/>
@@ -50,16 +53,6 @@
           <circle cx="19.5" cy="25" r="3.6"/><circle cx="25.5" cy="19" r="3.6"/>
           <circle cx="32.5" cy="19" r="3.6"/><circle cx="38.5" cy="25" r="3.6"/>
         </g>
-      </svg>
-    </button>
-    <button class="tool" data-tool="fill" aria-label="Paint bucket">
-      <svg viewBox="0 0 64 64" stroke="#3d3a4f" stroke-width="3" stroke-linejoin="round">
-        <g transform="rotate(-18 30 36)">
-          <path d="M16 26 C16 9, 42 9, 42 26" fill="none"/>
-          <path d="M14 26 h30 l-4 26 a4 4 0 0 1 -4 3.5 h-14 a4 4 0 0 1 -4 -3.5 Z" fill="#fff"/>
-          <ellipse cx="29" cy="26" rx="15" ry="5" fill="var(--ink)"/>
-        </g>
-        <path d="M53 32 C57 39 59 42 59 46 a6 6 0 0 1 -12 0 C47 42 49 39 53 32 Z" fill="var(--ink)"/>
       </svg>
     </button>
     <button class="tool" data-tool="eraser" aria-label="Eraser">
@@ -97,9 +90,13 @@
         </svg>
       </button>
       <button class="act hold wide" id="new-page" aria-label="New page (hold)">
-        <svg viewBox="0 0 64 64" stroke="#3d3a4f" stroke-width="3" stroke-linejoin="round">
-          <path d="M16 7 h22 l10 10 v40 h-32 Z" fill="#fff"/><path d="M38 7 v10 h10" fill="none"/>
-          <path d="M32 27 v20 M22 37 h20" stroke="#ff7a59" stroke-width="6" stroke-linecap="round"/>
+        <svg viewBox="0 0 64 64">
+          <path d="M48 5 L32 33" stroke="#8b5a2b" stroke-width="6" stroke-linecap="round"/>
+          <path d="M24 30 L41 38 L34 58 L10 48 Z" fill="#ffd23f" stroke="#3d3a4f" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M25 31 L40 38" stroke="#e8413c" stroke-width="5"/>
+          <path d="M17 46 L25 39 M23 50 L30 42 M29 53 L34 45" stroke="#c9a227" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="8" cy="58" r="3" fill="#d9cfbf"/><circle cx="15" cy="61" r="2.2" fill="#d9cfbf"/>
+          <path d="M52 44 Q52 49 57 49 Q52 49 52 54 Q52 49 47 49 Q52 49 52 44 Z" fill="#4cc9f0" stroke="#3d3a4f" stroke-width="2" stroke-linejoin="round"/>
         </svg>
       </button>
     </div>
