@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doodle Pad check</title>
+<style>
+  body { margin: 0; background: #f7f0e4; color: #3d3a4f; font: 18px/1.45 system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  .sub { opacity: .7; margin: 0 0 18px; }
+  .card { background: #fff; border-radius: 16px; padding: 14px 18px; margin: 14px 0; box-shadow: 0 3px 0 #e6d9c3; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 6px 4px; border-bottom: 1px solid #f0e8da; vertical-align: top; }
+  td:first-child { width: 42%; font-weight: 600; }
+  .ok { color: #2a9d4b; } .bad { color: #d63c33; } .meh { color: #b07a12; }
+  pre { white-space: pre-wrap; word-break: break-word; font-size: 15px; margin: 0; }
+  button { font: inherit; font-weight: 700; border: 0; border-radius: 14px; padding: 14px 18px; margin: 6px 8px 6px 0;
+           background: #ff7a59; color: #fff; box-shadow: 0 4px 0 #d9583a; }
+  button.plain { background: #fff; color: #3d3a4f; box-shadow: 0 4px 0 #e6d9c3; }
+  #ua { font-size: 14px; }
+  a.test { display: inline-block; margin: 10px 10px 4px 0; padding: 14px 22px; border-radius: 14px; background: #3a6ff0;
+           color: #fff; font-weight: 700; text-decoration: none; box-shadow: 0 4px 0 #2a52b8; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Doodle Pad check</h1>
+  <p class="sub">A plain page with no drawing app on it. Take a photo or screenshot of this screen and send it over.</p>
+
+  <div class="card">
+    <b>Tests</b> <span class="sub">Open each one, wait 10 seconds (or until it fails), then come back here.</span><br>
+    <a class="test" href="t1.html">Test 1</a>
+    <a class="test" href="t2.html">Test 2</a>
+    <a class="test" href="t3.html">Test 3</a>
+    <a class="test" href="t4.html">Test 4</a>
+    <a class="test" href="t5.html">Test 5</a>
+    <a class="test" href="t6.html">Test 6</a>
+    <a class="test" href="t7.html">Test 7</a>
+    <a class="test" href="t8.html">Test 8</a>
+    <a class="test" href="t9.html">Test 9</a>
+    <a class="test" href="t10.html">Test 10</a>
+    <a class="test" href="t11.html">Test 11</a>
+    <a class="test" href="t12.html">Test 12</a>
+    <a class="test" href="t13.html">Test 13</a>
+    <a class="test" href="t14.html">Test 14</a>
+    <a class="test" href="./">The app</a>
+  </div>
+
+  <div class="card"><table id="results"><tr><td>Status</td><td>checking…</td></tr></table></div>
+
+  <div class="card">
+    <b>Browser</b>
+    <pre id="ua"></pre>
+  </div>
+
+  <div class="card">
+    <b>History</b> <span class="sub">(this page, the tests and the app; newest first)</span>
+    <pre id="log">–</pre>
+  </div>
+
+  <div class="card">
+    <button id="reset">Reset offline data for this site</button>
+    <button id="clear" class="plain">Clear history</button>
+    <pre id="resetOut"></pre>
+  </div>
+</main>
+
+<script>
+(function () {
+  var started = Date.now();
+  var KEY = 'doodle-diag-log';
+  var memLog = [];
+  var storageOK = false;
+  try { localStorage.setItem('doodle-diag-test', '1'); localStorage.removeItem('doodle-diag-test'); storageOK = true; } catch (e) {}
+
+  function stamp() { var d = new Date(); return d.toLocaleTimeString() + '.' + String(d.getMilliseconds()).padStart(3, '0'); }
+  function readLog() { if (!storageOK) return memLog; try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; } }
+  function log(msg) {
+    var entries = readLog();
+    entries.unshift(stamp() + '  ' + msg);
+    entries = entries.slice(0, 60);
+    if (storageOK) { try { localStorage.setItem(KEY, JSON.stringify(entries)); } catch (e) {} } else { memLog = entries; }
+    document.getElementById('log').textContent = entries.join('\n');
+  }
+
+  log('— page opened (' + (performance.navigation && performance.navigation.type === 1 ? 'reload' : 'visit') + ')');
+  [1, 3, 6, 10, 20].forEach(function (s) { setTimeout(function () { log('still showing after ' + s + 's'); }, s * 1000); });
+  window.addEventListener('pagehide', function () { log('page closing (pagehide), lived ' + ((Date.now() - started) / 1000).toFixed(1) + 's'); });
+  window.addEventListener('beforeunload', function () { log('page unloading (beforeunload)'); });
+  document.addEventListener('visibilitychange', function () { log('visibility: ' + document.visibilityState); });
+  window.addEventListener('error', function (e) { log('error: ' + (e.message || e.type)); }, true);
+  window.addEventListener('unhandledrejection', function (e) { log('promise error: ' + (e.reason && e.reason.message || e.reason)); });
+
+  document.getElementById('ua').textContent = navigator.userAgent;
+
+  var rows = [];
+  function row(name, value, cls) { rows.push('<tr><td>' + name + '</td><td class="' + (cls || '') + '">' + value + '</td></tr>'); }
+  function yes(b) { return b ? 'yes' : 'NO'; }
+
+  async function check() {
+    row('Online', yes(navigator.onLine), navigator.onLine ? 'ok' : 'bad');
+    row('Cookies allowed', yes(navigator.cookieEnabled), navigator.cookieEnabled ? 'ok' : 'bad');
+    row('Local storage', storageOK ? 'works' : 'BLOCKED', storageOK ? 'ok' : 'bad');
+
+    var idb = 'not available';
+    if (window.indexedDB) {
+      idb = await new Promise(function (res) {
+        try {
+          var r = indexedDB.open('doodle-diag-test', 1);
+          r.onsuccess = function () { r.result.close(); res('works'); };
+          r.onerror = function () { res('BLOCKED (' + (r.error && r.error.name) + ')'); };
+          r.onblocked = function () { res('blocked by another tab'); };
+          setTimeout(function () { res('no answer after 3s'); }, 3000);
+        } catch (e) { res('BLOCKED (' + e.name + ')'); }
+      });
+    }
+    row('Saved drawings storage (IndexedDB)', idb, idb === 'works' ? 'ok' : 'bad');
+
+    var swSupported = 'serviceWorker' in navigator;
+    row('Offline helper supported', yes(swSupported), swSupported ? 'ok' : 'meh');
+    if (swSupported) {
+      try {
+        var regs = await navigator.serviceWorker.getRegistrations();
+        row('Offline helpers installed', regs.length ? regs.map(function (r) {
+          var w = r.active || r.waiting || r.installing;
+          return r.scope.replace(location.origin, '') + ' (' + (w ? w.state : 'none') + ')';
+        }).join('<br>') : 'none', regs.length ? 'meh' : 'ok');
+      } catch (e) { row('Offline helpers installed', 'could not check (' + e.name + ')', 'bad'); }
+      row('This page run by a helper', yes(!!navigator.serviceWorker.controller), navigator.serviceWorker.controller ? 'meh' : 'ok');
+    }
+
+    var cacheInfo = 'not available';
+    if (window.caches) {
+      try { var keys = await caches.keys(); cacheInfo = keys.length ? keys.join(', ') : 'none'; }
+      catch (e) { cacheInfo = 'BLOCKED (' + e.name + ')'; }
+    }
+    row('Offline copies saved', cacheInfo, /BLOCKED/.test(cacheInfo) ? 'bad' : '');
+
+    row('Opened as', matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches ? 'home-screen app' : 'browser tab');
+    row('Screen', screen.width + '×' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x');
+    row('Checked at', new Date().toLocaleString());
+    document.getElementById('results').innerHTML = rows.join('');
+  }
+  check().catch(function (e) { log('check failed: ' + e); });
+
+  document.getElementById('reset').addEventListener('click', async function () {
+    var out = [];
+    try {
+      if ('serviceWorker' in navigator) {
+        var regs = await navigator.serviceWorker.getRegistrations();
+        for (var i = 0; i < regs.length; i++) { out.push('removed helper ' + regs[i].scope.replace(location.origin, '') + ': ' + await regs[i].unregister()); }
+        if (!regs.length) out.push('no helpers to remove');
+      }
+      if (window.caches) {
+        var keys = await caches.keys();
+        for (var j = 0; j < keys.length; j++) { await caches.delete(keys[j]); out.push('deleted saved copy ' + keys[j]); }
+        if (!keys.length) out.push('no saved copies to delete');
+      }
+      out.push('Done. Drawings were not touched.');
+    } catch (e) { out.push('failed: ' + e.name + ' ' + e.message); }
+    document.getElementById('resetOut').textContent = out.join('\n');
+    log('reset pressed: ' + out.length + ' steps');
+  });
+  document.getElementById('clear').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    memLog = []; log('history cleared');
+  });
+})();
+</script>
+</body>
+</html>

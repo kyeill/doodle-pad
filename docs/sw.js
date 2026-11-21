@@ -13,7 +13,7 @@
 // - New versions still arrive by changing this file (the browser checks it directly),
 //   and app.js reloads into them. Bump VERSION on every change.
 // VERSION also shows in the Pictures screen.
-const VERSION = 'doodle-v10';
+const VERSION = 'doodle-v11';
 const FILES = ['./', 'index.html', 'style.css', 'stickers.js', 'app.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {

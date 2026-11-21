@@ -29,6 +29,10 @@ document.addEventListener('visibilitychange', () => dlog('visibility: ' + docume
 window.addEventListener('error', e => dlog('error: ' + (e.message || (e.target && (e.target.src || e.target.href)) || e.type)), true);
 window.addEventListener('unhandledrejection', e => dlog('promise error: ' + (e.reason && e.reason.message || e.reason)));
 
+// test pages: stop start-up after a named stage, to find which stage upsets a browser
+const stopHere = name => { if (TEST.stopAt !== name) return false; dlog('stopped on purpose after stage: ' + name); return true; };
+if (stopHere('logger')) return;
+
 // ---------- settings ----------
 const COLORS = ['#e8413c', '#f7902b', '#ffd23f', '#8ac926', '#2a9d4b', '#4cc9f0',
                 '#3a6ff0', '#8e5cd9', '#ff7eb6', '#f4c095', '#8b5a2b', '#2b2b2b'];
@@ -355,6 +359,8 @@ undoBtn.addEventListener('click', () => {
   unsaved = true; scheduleSave(); updUndo();
 });
 
+if (stopHere('drawing')) return;
+
 // ---------- tool, colour, size pickers ----------
 function setInk(c) { color = c; document.documentElement.style.setProperty('--ink', c); }
 
@@ -408,6 +414,8 @@ document.querySelectorAll('.size').forEach(b => b.addEventListener('pointerdown'
   sizeIdx = +b.dataset.size;
   document.querySelectorAll('.size').forEach(x => x.classList.toggle('on', x === b));
 }));
+
+if (stopHere('pickers')) return;
 
 // ---------- hold-to-confirm buttons (toddler-proof) ----------
 function wiggle(el) { el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle'); }
@@ -573,6 +581,8 @@ async function share(rec) {
   setTimeout(() => URL.revokeObjectURL(a.href), 10000);
 }
 
+if (stopHere('storage')) return;
+
 // ---------- kid-proofing ----------
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('dblclick', e => e.preventDefault());
@@ -584,6 +594,8 @@ document.addEventListener('pointerdown', () => {
   if (installed && !trapArmed) { history.pushState({ doodle: 1 }, ''); trapArmed = true; }
 }, true);
 window.addEventListener('popstate', () => { trapArmed = false; if (!gallery.hidden) closeGallery(); });
+
+if (stopHere('kidproof')) return;
 
 // ---------- start ----------
 (async () => {
