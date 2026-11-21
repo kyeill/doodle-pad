@@ -34,6 +34,17 @@
   the fetch strategy. **Bump VERSION on every change** or cache-first keeps old files.
   If the newer tablet still fails on v6, the cause is Samsung Kids / My Browser, and
   the APK is the answer.
+- **v6 didn't fix it. The real cause, found with diag.html (v7, 2026-11-20):** on the newer
+  tablet (SM-X230, Android 16, Samsung Kids My Browser = Android WebView, Chrome 157),
+  diag.html loaded and stayed while controlled by the v6 helper. Storage and the helper
+  were fine. Anything served **from the saved copy** (index, icon PNG) flashed, then showed
+  "Failed to go to website". Anything the helper **fetched from the network** worked
+  (diag.html, and sports-daily, whose helper is network-first with `fetch(e.request)`).
+  Working theory: Samsung Kids approves pages as they come from the network, so a
+  storage-served page looks unapproved. The older tablet's Samsung Kids doesn't do
+  this. v7 is network-first with the untouched `fetch(e.request)` and falls back to the
+  saved copy only when the network fails. **Don't go back to cache-first.** Unknown: whether
+  offline (saved copy) works inside Samsung Kids on that tablet.
 - **Local preview shows the old version** until the service worker updates. Unregister
   it and clear caches, or load twice.
 - **Crayon grain vs. paint bucket.** The crayon's holes have to stay below about 59%
