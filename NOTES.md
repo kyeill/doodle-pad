@@ -60,9 +60,9 @@
   (`doodle-diag-log` in localStorage) stay as the troubleshooting tools.
 - **Local preview shows the old version** until the service worker updates. Unregister
   it and clear caches, or load twice.
-- **Crayon grain vs. paint bucket.** The crayon's holes have to stay below about 59%
-  coverage, or they link up and the bucket fill leaks through crayon outlines. It's
-  28% now, in 2×2 blocks.
+- **Crayon grain vs. paint bucket** (crayon removed 2026-11-21, kept here in case it
+  comes back): a grain texture's holes have to stay below about 59% coverage, or they
+  link up and the bucket fill leaks through the outlines.
 - **An SVG with `width:auto; height:66%` inside a grid button** grew past the button
   (84px in a 60px button) in portrait. Size icons in explicit units.
 - **Fill with no change:** if the bucket is tapped on a spot that's already that colour,

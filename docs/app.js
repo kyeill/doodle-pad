@@ -32,7 +32,7 @@ const COLORS = ['#e8413c', '#f7902b', '#ffd23f', '#8ac926', '#2a9d4b', '#4cc9f0'
 const SIZES = [6, 14, 28];          // brush width in CSS px
 const STICKER_SIZES = [80, 130, 190]; // sticker width in CSS px, by the same size buttons
 const ERASER_SCALE = 2.4;
-const MAX_DPR = 1.5;                // plenty sharp for crayons, keeps memory low
+const MAX_DPR = 1.5;                // plenty sharp for drawing, keeps memory low
 const UNDO_MAX = 8;
 const SAVE_DELAY = 800;
 const PALM_WIDTH = 90;              // touches wider than this (CSS px) are ignored
@@ -49,7 +49,7 @@ const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
 // log once the first frame has actually been put on screen
 requestAnimationFrame(() => requestAnimationFrame(() => dlog('first frame on screen after ' + lived())));
 
-let tool = 'crayon';
+let tool = 'marker';
 let color = COLORS[0];
 let sizeIdx = 1;
 let sticker = 0;
@@ -98,35 +98,12 @@ function pos(e) {
 }
 
 // ---------- brushes ----------
-const patterns = new Map();
-// Crayon = a solid colour with fixed paper-grain holes. The pattern is anchored to
-// the canvas, so going over the same spot keeps the same grain, like real crayon.
-function crayonPattern(c) {
-  if (patterns.has(c)) return patterns.get(c);
-  const n = document.createElement('canvas');
-  n.width = n.height = 96;
-  const g = n.getContext('2d');
-  g.fillStyle = c; g.fillRect(0, 0, 96, 96);
-  const img = g.getImageData(0, 0, 96, 96), a = img.data;
-  for (let y = 0; y < 96; y += 2) for (let x = 0; x < 96; x += 2) {
-    if (Math.random() < 0.28) {   // well under 0.59, so holes never join up and the bucket can't leak
-      a[(y * 96 + x) * 4 + 3] = 0; a[(y * 96 + x + 1) * 4 + 3] = 0;
-      a[((y + 1) * 96 + x) * 4 + 3] = 0; a[((y + 1) * 96 + x + 1) * 4 + 3] = 0;
-    }
-  }
-  g.putImageData(img, 0, 0);
-  const p = ctx.createPattern(n, 'repeat');
-  patterns.set(c, p);
-  return p;
-}
-
 function style(s, d) {
   ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = s.w;
   let paint;
   switch (s.tool) {
     case 'eraser': paint = '#fff'; break;
     case 'rainbow': s.hue = (s.hue + d * 0.35 / dpr) % 360; paint = `hsl(${s.hue} 90% 55%)`; break;
-    case 'crayon': paint = crayonPattern(s.color); ctx.lineWidth = s.w * (0.9 + Math.random() * 0.2); break;
     default: paint = s.color;
   }
   ctx.strokeStyle = paint; ctx.fillStyle = paint;
@@ -390,7 +367,7 @@ COLORS.forEach((c, i) => {
   b.addEventListener('pointerdown', () => {
     setInk(c);
     colorsEl.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b));
-    if (tool === 'eraser') selectTool('crayon');  // picking a colour while erasing means "I want to draw"
+    if (tool === 'eraser') selectTool('marker');  // picking a colour while erasing means "I want to draw"
   });
   colorsEl.appendChild(b);
 });
