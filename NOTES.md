@@ -13,9 +13,18 @@
 
 ## Traps already paid for
 
-- **The offline cache serves stale files.** After editing, bump `VERSION` in `sw.js`. In
-  the local preview, unregister the service worker and clear caches before reloading,
-  or you'll test the old CSS.
+- **Updates didn't reach the tablet (fixed in v4, 2026-11-20).** The stickers shipped in v3,
+  but he said they "didn't work". Two causes. (1) v3's service worker served the saved
+  copy first and only updated in the background. Android *resumes* an installed app
+  rather than reloading it, so "open it twice" never loaded the new files. (2) GitHub
+  Pages sends `max-age=600`, so the new worker could cache old `app.js` next to new
+  `index.html`, and with that mix "Stickers" just draws lines. Now the worker is network-first
+  with `cache: 'no-cache'`, installs with `cache: 'reload'`, the app checks for an
+  update every time it comes back on screen, and it reloads itself (after saving, never
+  mid-stroke) when a new version takes over. The running version shows faintly in
+  the Pictures header. Still bump `VERSION` in `sw.js` on every change.
+- **Local preview shows the old version** until the service worker updates. Unregister
+  it and clear caches, or load twice.
 - **Crayon grain vs. paint bucket.** The crayon's holes have to stay below about 59%
   coverage, or they link up and the bucket fill leaks through crayon outlines. It's
   28% now, in 2×2 blocks.

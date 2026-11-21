@@ -140,7 +140,9 @@ function buildSticker(svg) {
       o.drawImage(edge, 0, 0);
       o.shadowColor = 'transparent';
       o.drawImage(base, 0, 0);
-      res({ canvas: out, url: out.toDataURL(), scale: T / N });
+      let url;
+      try { url = out.toDataURL(); } catch { url = img.src; }  // preview falls back to the plain drawing
+      res({ canvas: out, url, scale: T / N });
     };
     img.onerror = () => res(null);
     img.src = 'data:image/svg+xml;charset=utf-8,' +
@@ -261,7 +263,7 @@ canvas.addEventListener('pointerdown', e => {
   if (tool === 'stickers') {
     // the sticker follows the finger and sticks where it's let go
     const art = stickerArt[sticker];
-    if (!art) { if (pushed) undo.pop(); return; }
+    if (!art) { if (pushed) undo.pop(); wiggle(document.querySelector('[data-tool=stickers]')); return; }
     const s = { tool, art, size: STICKER_SIZES[sizeIdx], rot: (Math.random() - 0.5) * 0.4,
                 p1: p, el: document.createElement('img') };
     s.el.className = 'sticker-preview'; s.el.src = art.url; s.el.draggable = false; s.el.alt = '';
@@ -545,7 +547,34 @@ window.addEventListener('popstate', () => { trapArmed = false; if (!gallery.hidd
   const cur = store.get('doodle:current');
   if (!(cur && await openPage(cur).catch(() => false))) startPage(cur || newId());
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  setupUpdates();
 })();
+
+// ---------- updates ----------
+// Android resumes an installed app instead of reloading it, so check for a new
+// version every time the app comes back on screen. When one takes over, save the
+// drawing and reload (never mid-stroke). The drawing comes straight back.
+function setupUpdates() {
+  if (!('serviceWorker' in navigator)) return;
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', async () => {
+    if (!hadController || reloading) return;   // first install: nothing to swap
+    reloading = true;
+    while (strokes.size) await new Promise(r => setTimeout(r, 300));
+    await saveNow();
+    location.reload();
+  });
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) reg.update().catch(() => {});
+    });
+  }).catch(() => {});
+  // show the running version in the Pictures screen, for troubleshooting
+  caches.keys().then(keys => {
+    const v = keys.find(k => k.startsWith('doodle-v'));
+    if (v) $('#version').textContent = v.replace('doodle-', '');
+  }).catch(() => {});
+}
 
 })();
