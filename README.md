@@ -7,9 +7,10 @@ first load.
 
 ## What's on screen
 
-- **Left: tools.** Paint bucket (fills an enclosed shape), crayon (with a paper-grain
-  texture; selected when the app opens), rainbow (changes colour as you draw), stars
-  (stamps stars along the line), stickers, eraser. The marker was removed 2026-11-20.
+- **Left: tools.** Paint bucket (fills an enclosed shape), marker (solid line;
+  selected when the app opens), rainbow (changes colour as you draw), stars
+  (stamps stars along the line), stickers, eraser. The crayon was swapped back to the
+  marker 2026-11-21.
 - **Right: 12 colours, 3 brush sizes, undo, pictures, new page.**
 - **Stickers:** with the Stickers tool on, the colours change to 10 animal faces
   (top row / left column: panda, sloth, tiger, lion, seal; bottom row / right column:
