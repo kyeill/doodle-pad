@@ -47,8 +47,12 @@ const isApk = !!(window.Capacitor && (!window.Capacitor.isNativePlatform || wind
 if (isApk) document.documentElement.classList.add('apk');
 const stage = $('#stage');
 const canvas = $('#paper');
-const ctx = canvas.getContext('2d');
-const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+// cpuCanvas: willReadFrequently keeps the canvas on the CPU instead of the graphics chip
+const ctx = canvas.getContext('2d', TEST.cpuCanvas ? { willReadFrequently: true } : undefined);
+const dpr = TEST.smallCanvas ? 1 : Math.min(window.devicePixelRatio || 1, MAX_DPR);
+if (TEST.cpuCanvas) dlog('drawing surface on the main processor (not graphics chip)');
+// log once the first frame has actually been put on screen
+requestAnimationFrame(() => requestAnimationFrame(() => dlog('first frame on screen after ' + lived())));
 
 let tool = 'marker';
 let color = COLORS[0];
@@ -72,6 +76,7 @@ function paper() {
 
 // Grow the canvas to cover the stage (never shrink, so rotating keeps the drawing).
 function fitCanvas(minW = 0, minH = 0) {
+  if (TEST.noCanvas) return;   // test: leave the drawing surface at 0×0
   const r = stage.getBoundingClientRect();
   const W = Math.max(canvas.width, Math.ceil(r.width * dpr), minW);
   const H = Math.max(canvas.height, Math.ceil(r.height * dpr), minH);
