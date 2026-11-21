@@ -5,6 +5,7 @@
 const COLORS = ['#e8413c', '#f7902b', '#ffd23f', '#8ac926', '#2a9d4b', '#4cc9f0',
                 '#3a6ff0', '#8e5cd9', '#ff7eb6', '#f4c095', '#8b5a2b', '#2b2b2b'];
 const SIZES = [6, 14, 28];          // brush width in CSS px
+const STICKER_SIZES = [80, 130, 190]; // sticker width in CSS px, by the same size buttons
 const ERASER_SCALE = 2.4;
 const MAX_DPR = 1.5;                // plenty sharp for crayons, keeps memory low
 const UNDO_MAX = 8;
@@ -21,7 +22,9 @@ const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
 let tool = 'marker';
 let color = COLORS[0];
 let sizeIdx = 1;
-let pageId = null;        // id of the page on screen
+let sticker = 0;
+const stickerArt = [];    // per sticker: { canvas, url, scale } once drawn
+let pageId = null;       // id of the page on screen
 let hasContent = false;   // anything drawn on this page yet
 let unsaved = false;      // changed since last save
 const undo = [];
@@ -113,6 +116,52 @@ function star(s, p) {
   ctx.fill(); ctx.stroke();
 }
 
+// ---------- stickers ----------
+// Each animal is drawn once into a die-cut sticker: the art, a white border made by
+// stamping its silhouette in a ring, and a soft shadow.
+function buildSticker(svg) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const N = 300, P = 24, T = N + P * 2, B = 10;
+      const base = document.createElement('canvas'); base.width = base.height = T;
+      base.getContext('2d').drawImage(img, P, P, N, N);
+      const edge = document.createElement('canvas'); edge.width = edge.height = T;
+      const e = edge.getContext('2d');
+      for (let i = 0; i < 24; i++) {
+        const a = i / 24 * Math.PI * 2;
+        e.drawImage(base, Math.cos(a) * B, Math.sin(a) * B);
+      }
+      e.globalCompositeOperation = 'source-in';
+      e.fillStyle = '#fff'; e.fillRect(0, 0, T, T);
+      const out = document.createElement('canvas'); out.width = out.height = T;
+      const o = out.getContext('2d');
+      o.shadowColor = 'rgba(61, 58, 79, .28)'; o.shadowBlur = 10; o.shadowOffsetY = 4;
+      o.drawImage(edge, 0, 0);
+      o.shadowColor = 'transparent';
+      o.drawImage(base, 0, 0);
+      res({ canvas: out, url: out.toDataURL(), scale: T / N });
+    };
+    img.onerror = () => res(null);
+    img.src = 'data:image/svg+xml;charset=utf-8,' +
+      encodeURIComponent(svg.replace('<svg ', '<svg width="300" height="300" '));
+  });
+}
+
+function placeSticker(s) {
+  const D = s.size * s.art.scale;
+  s.el.style.left = (s.p1.x / dpr - D / 2) + 'px';
+  s.el.style.top = (s.p1.y / dpr - D / 2) + 'px';
+}
+
+function stickSticker(s) {
+  const D = s.size * s.art.scale * dpr;
+  ctx.save();
+  ctx.translate(s.p1.x, s.p1.y); ctx.rotate(s.rot);
+  ctx.drawImage(s.art.canvas, -D / 2, -D / 2, D, D);
+  ctx.restore();
+}
+
 function dab(s, p) {
   if (s.tool === 'stars') return star(s, p);
   style(s, 0);
@@ -120,6 +169,7 @@ function dab(s, p) {
 }
 
 function segment(s, p) {
+  if (s.tool === 'stickers') { s.p1 = p; return placeSticker(s); }
   const d = Math.hypot(p.x - s.p1.x, p.y - s.p1.y);
   if (d < 0.5) return;
   if (s.tool === 'stars') {
@@ -137,7 +187,8 @@ function segment(s, p) {
   s.mid = mid; s.p1 = p;
 }
 
-function finish(s) {
+function finish(s, cancelled) {
+  if (s.tool === 'stickers') { s.el.remove(); if (!cancelled) stickSticker(s); return; }
   if (s.tool === 'stars') return;
   style(s, 0);
   ctx.beginPath(); ctx.moveTo(s.mid.x, s.mid.y); ctx.lineTo(s.p1.x, s.p1.y); ctx.stroke();
@@ -207,6 +258,21 @@ canvas.addEventListener('pointerdown', e => {
     return;
   }
   try { canvas.setPointerCapture(e.pointerId); } catch {}
+  if (tool === 'stickers') {
+    // the sticker follows the finger and sticks where it's let go
+    const art = stickerArt[sticker];
+    if (!art) { if (pushed) undo.pop(); return; }
+    const s = { tool, art, size: STICKER_SIZES[sizeIdx], rot: (Math.random() - 0.5) * 0.4,
+                p1: p, el: document.createElement('img') };
+    s.el.className = 'sticker-preview'; s.el.src = art.url; s.el.draggable = false; s.el.alt = '';
+    s.el.style.width = s.el.style.height = s.size * art.scale + 'px';
+    s.el.style.rotate = s.rot + 'rad';
+    placeSticker(s);
+    stage.appendChild(s.el);
+    strokes.set(e.pointerId, s);
+    changed();
+    return;
+  }
   const w = SIZES[sizeIdx] * dpr * (tool === 'eraser' ? ERASER_SCALE : 1);
   const s = { tool, color, w, p1: p, mid: p, hue: Math.random() * 360, acc: 0 };
   strokes.set(e.pointerId, s);
@@ -224,7 +290,7 @@ canvas.addEventListener('pointermove', e => {
 function endStroke(e) {
   const s = strokes.get(e.pointerId);
   if (!s) return;
-  finish(s);
+  finish(s, e.type === 'pointercancel');
   strokes.delete(e.pointerId);
   if (strokes.size === 0) scheduleSave();
 }
@@ -254,10 +320,27 @@ undoBtn.addEventListener('click', () => {
 // ---------- tool, colour, size pickers ----------
 function setInk(c) { color = c; document.documentElement.style.setProperty('--ink', c); }
 
-document.querySelectorAll('.tool').forEach(b => b.addEventListener('pointerdown', () => {
-  tool = b.dataset.tool;
-  document.querySelectorAll('.tool').forEach(x => x.classList.toggle('on', x === b));
-}));
+function selectTool(t) {
+  tool = t;
+  document.querySelectorAll('.tool').forEach(x => x.classList.toggle('on', x.dataset.tool === t));
+  $('#side').classList.toggle('sticker-mode', t === 'stickers');
+}
+document.querySelectorAll('.tool').forEach(b =>
+  b.addEventListener('pointerdown', () => selectTool(b.dataset.tool)));
+
+const stickersEl = $('#stickers');
+(window.STICKERS || []).forEach((st, i) => {
+  const b = document.createElement('button');
+  b.className = 'stk' + (i === 0 ? ' on' : '');
+  b.innerHTML = st.svg;
+  b.setAttribute('aria-label', st.name);
+  b.addEventListener('pointerdown', () => {
+    sticker = i;
+    stickersEl.querySelectorAll('.stk').forEach(x => x.classList.toggle('on', x === b));
+  });
+  stickersEl.appendChild(b);
+  buildSticker(st.svg).then(art => { stickerArt[i] = art; });
+});
 
 const colorsEl = $('#colors');
 COLORS.forEach((c, i) => {
@@ -268,10 +351,7 @@ COLORS.forEach((c, i) => {
   b.addEventListener('pointerdown', () => {
     setInk(c);
     colorsEl.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b));
-    if (tool === 'eraser') {   // picking a colour while erasing means "I want to draw"
-      tool = 'marker';
-      document.querySelectorAll('.tool').forEach(x => x.classList.toggle('on', x.dataset.tool === 'marker'));
-    }
+    if (tool === 'eraser') selectTool('marker');  // picking a colour while erasing means "I want to draw"
   });
   colorsEl.appendChild(b);
 });

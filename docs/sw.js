@@ -1,7 +1,7 @@
 // Offline support: serve the app from cache, refresh the cache in the background.
 // Bump VERSION when shipping changes so old caches are cleared.
-const VERSION = 'doodle-v2';
-const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const VERSION = 'doodle-v3';
+const FILES = ['./', 'index.html', 'style.css', 'stickers.js', 'app.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

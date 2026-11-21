@@ -8,9 +8,14 @@ first load.
 ## What's on screen
 
 - **Left: tools.** Marker, crayon (with a paper-grain texture), rainbow (changes
-  colour as you draw), stars (stamps stars along the line), paint bucket (fills an
-  enclosed shape), eraser.
+  colour as you draw), stars (stamps stars along the line), stickers, paint bucket
+  (fills an enclosed shape), eraser.
 - **Right: 12 colours, 3 brush sizes, undo, pictures, new page.**
+- **Stickers:** with the Stickers tool on, the colours change to 10 animal faces
+  (panda, bunny, fox, owl, koala, pig, otter, seal, tiger, lion). Touch the page and
+  the sticker appears under the finger. Drag it into place, and it sticks when the
+  finger lifts. The size buttons set small, medium or big. Each one gets a slight
+  random tilt.
 - Several fingers can draw at once, so both kids can draw together.
 
 ## Toddler-proofing
@@ -36,7 +41,8 @@ Everything the site serves is in `docs/` (GitHub Pages serves it as-is; there's 
 | --- | --- |
 | `index.html` | Layout and the hand-drawn tool icons |
 | `style.css` | Look and the landscape/portrait layouts |
-| `app.js` | Drawing, brushes, paint bucket, undo, saving, Pictures |
+| `app.js` | Drawing, brushes, stickers, paint bucket, undo, saving, Pictures |
+| `stickers.js` | The animal sticker drawings (original SVG faces). Add an animal by adding an entry |
 | `sw.js` | Offline support. **Bump `VERSION` on every change** or tablets keep the old copy |
 | `manifest.webmanifest` | Home-screen install settings (full screen, landscape) |
 | `icon-*.png` | Home-screen icon |
