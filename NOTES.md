@@ -23,6 +23,17 @@
   update every time it comes back on screen, and it reloads itself (after saving, never
   mid-stroke) when a new version takes over. The running version shows faintly in
   the Pictures header. Still bump `VERSION` in `sw.js` on every change.
+- **"Failed to load page" in Samsung Kids' My Browser on the newer tablet (v6, 2026-11-20).**
+  The older tablet was fine. Even the plain icon PNG flashed and then failed there, so
+  the cause wasn't the app's code. v4's network-first worker had a 4s timeout that
+  returned `Response.error()` when nothing was saved, so it could produce exactly
+  that error. v6 is cache-first for the app's files, has no timeout, and on any
+  failure falls through to a plain `fetch(req)`. It never returns an error of its own.
+  He needs offline access, so removing the worker was rejected. Updates still work
+  because they're driven by the `sw.js` byte change + controllerchange reload, not by
+  the fetch strategy. **Bump VERSION on every change** or cache-first keeps old files.
+  If the newer tablet still fails on v6, the cause is Samsung Kids / My Browser, and
+  the APK is the answer.
 - **Local preview shows the old version** until the service worker updates. Unregister
   it and clear caches, or load twice.
 - **Crayon grain vs. paint bucket.** The crayon's holes have to stay below about 59%

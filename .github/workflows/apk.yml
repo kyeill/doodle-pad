@@ -2,16 +2,11 @@
 # Fixed download link: https://github.com/kyeill/doodle-pad/releases/latest/download/doodle-pad.apk
 name: Build APK
 
+# Manual-only until the signing key secrets (ANDROID_KEYSTORE_B64 / _PASSWORD) are
+# stored in the repo. Then restore the push trigger so every change builds an APK:
+#   push: { branches: [main], paths: [docs/**, android-overrides/**, assets/**,
+#           package.json, capacitor.config.json, .github/workflows/apk.yml] }
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs/**'
-      - 'android-overrides/**'
-      - 'assets/**'
-      - 'package.json'
-      - 'capacitor.config.json'
-      - '.github/workflows/apk.yml'
   workflow_dispatch:
 
 permissions:
