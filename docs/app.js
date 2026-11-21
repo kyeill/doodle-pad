@@ -362,7 +362,11 @@ document.querySelectorAll('.tool').forEach(b =>
   b.addEventListener('pointerdown', () => selectTool(b.dataset.tool)));
 
 const stickersEl = $('#stickers');
-(window.STICKERS || []).forEach((st, i) => {
+const STICKER_LIST = TEST.noStickers ? [] : (window.STICKERS || []);
+if (TEST.noStickers) dlog('skipped: sticker tray');
+else dlog('making sticker tray' + (TEST.noStickerArt ? ' (no sticker pictures)' : ''));
+let stickersMade = 0;
+STICKER_LIST.forEach((st, i) => {
   const b = document.createElement('button');
   b.className = 'stk' + (i === 0 ? ' on' : '');
   b.innerHTML = st.svg;
@@ -372,8 +376,13 @@ const stickersEl = $('#stickers');
     stickersEl.querySelectorAll('.stk').forEach(x => x.classList.toggle('on', x === b));
   });
   stickersEl.appendChild(b);
-  buildSticker(st.svg).then(art => { stickerArt[i] = art; });
+  if (TEST.noStickerArt) return;
+  buildSticker(st.svg).then(art => {
+    stickerArt[i] = art;
+    dlog('sticker picture ' + (++stickersMade) + '/' + STICKER_LIST.length + (art ? '' : ' FAILED') + ' (' + st.name + ')');
+  });
 });
+if (STICKER_LIST.length) dlog('sticker tray added');
 
 const colorsEl = $('#colors');
 COLORS.forEach((c, i) => {
@@ -574,8 +583,10 @@ window.addEventListener('popstate', () => { trapArmed = false; if (!gallery.hidd
 // ---------- start ----------
 (async () => {
   fitCanvas();
+  dlog('drawing surface ' + canvas.width + '×' + canvas.height);
   updUndo();
   const cur = store.get('doodle:current');
+  dlog(cur ? 'reopening last drawing' : 'no last drawing');
   if (!(cur && await openPage(cur).catch(() => false))) startPage(cur || newId());
   dlog('drawing ready');
   if (TEST.noPersist) dlog('skipped: keep-storage request');
