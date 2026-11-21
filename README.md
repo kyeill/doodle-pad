@@ -12,7 +12,8 @@ first load.
   (stamps stars along the line), stickers, eraser. The marker was removed 2026-11-20.
 - **Right: 12 colours, 3 brush sizes, undo, pictures, new page.**
 - **Stickers:** with the Stickers tool on, the colours change to 10 animal faces
-  (panda, bunny, fox, owl, koala, pig, otter, seal, tiger, lion). Touch the page and
+  (top row / left column: panda, sloth, tiger, lion, seal; bottom row / right column:
+  koala, fox, bunny, pig, otter). Touch the page and
   the sticker appears under the finger. Drag it into place, and it sticks when the
   finger lifts. The size buttons set small, medium or big. Each one gets a slight
   random tilt.
