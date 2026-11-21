@@ -1,6 +1,34 @@
 'use strict';
 (() => {
 
+// ---------- troubleshooting log ----------
+// A short record of start-up and of how the page ends, kept in localStorage and shown
+// on diag.html. Added to find why Samsung Kids' browser on the newer tablet shows the
+// app briefly and then "Failed to go to website".
+// Test pages set window.DOODLE_TEST to switch parts off (noUpdates, noPersist).
+const TEST = window.DOODLE_TEST || {};
+const LOG_KEY = 'doodle-diag-log';
+const bornAt = Date.now();
+const pageTag = (location.pathname.split('/').pop() || 'app') +
+  (Object.keys(TEST).length ? ' [' + Object.keys(TEST).join(',') + ']' : '');
+function dlog(msg) {
+  try {
+    const d = new Date();
+    const line = d.toLocaleTimeString() + '.' + String(d.getMilliseconds()).padStart(3, '0') + '  ' + pageTag + ': ' + msg;
+    const all = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+    all.unshift(line);
+    localStorage.setItem(LOG_KEY, JSON.stringify(all.slice(0, 80)));
+  } catch {}
+}
+const lived = () => ((Date.now() - bornAt) / 1000).toFixed(1) + 's';
+dlog('— opened, run by offline helper: ' + !!(navigator.serviceWorker && navigator.serviceWorker.controller));
+[1, 3, 6, 10].forEach(s => setTimeout(() => dlog('still showing after ' + s + 's'), s * 1000));
+window.addEventListener('pagehide', () => dlog('page closing (pagehide) after ' + lived()));
+window.addEventListener('beforeunload', () => dlog('page unloading (beforeunload) after ' + lived()));
+document.addEventListener('visibilitychange', () => dlog('visibility: ' + document.visibilityState));
+window.addEventListener('error', e => dlog('error: ' + (e.message || (e.target && (e.target.src || e.target.href)) || e.type)), true);
+window.addEventListener('unhandledrejection', e => dlog('promise error: ' + (e.reason && e.reason.message || e.reason)));
+
 // ---------- settings ----------
 const COLORS = ['#e8413c', '#f7902b', '#ffd23f', '#8ac926', '#2a9d4b', '#4cc9f0',
                 '#3a6ff0', '#8e5cd9', '#ff7eb6', '#f4c095', '#8b5a2b', '#2b2b2b'];
@@ -549,8 +577,18 @@ window.addEventListener('popstate', () => { trapArmed = false; if (!gallery.hidd
   updUndo();
   const cur = store.get('doodle:current');
   if (!(cur && await openPage(cur).catch(() => false))) startPage(cur || newId());
-  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
-  setupUpdates();
+  dlog('drawing ready');
+  if (TEST.noPersist) dlog('skipped: keep-storage request');
+  else {
+    dlog('asking to keep storage permanently');
+    try {
+      if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().then(r => dlog('keep-storage answer: ' + r), e => dlog('keep-storage failed: ' + e));
+      }
+    } catch (e) { dlog('keep-storage threw: ' + e); }
+  }
+  if (TEST.noUpdates) dlog('skipped: offline helper + update check');
+  else setupUpdates();
 })();
 
 // ---------- updates ----------
@@ -563,17 +601,21 @@ function setupUpdates() {
   const hadController = !!navigator.serviceWorker.controller;
   let reloading = false;
   navigator.serviceWorker.addEventListener('controllerchange', async () => {
+    dlog('new offline helper took over' + (hadController ? '' : ' (first install, no reload)'));
     if (!hadController || reloading) return;   // first install: nothing to swap
     reloading = true;
     while (strokes.size) await new Promise(r => setTimeout(r, 300));
     await saveNow();
+    dlog('reloading into the new version');
     location.reload();
   });
+  dlog('registering offline helper');
   navigator.serviceWorker.register('sw.js').then(reg => {
+    dlog('offline helper registered');
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) reg.update().catch(() => {});
     });
-  }).catch(() => {});
+  }).catch(e => dlog('offline helper failed: ' + e));
   // show the running version in the Pictures screen, for troubleshooting
   caches.keys().then(keys => {
     const v = keys.find(k => k.startsWith('doodle-v'));

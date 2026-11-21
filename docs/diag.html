@@ -19,12 +19,22 @@
            background: #ff7a59; color: #fff; box-shadow: 0 4px 0 #d9583a; }
   button.plain { background: #fff; color: #3d3a4f; box-shadow: 0 4px 0 #e6d9c3; }
   #ua { font-size: 14px; }
+  a.test { display: inline-block; margin: 10px 10px 4px 0; padding: 14px 22px; border-radius: 14px; background: #3a6ff0;
+           color: #fff; font-weight: 700; text-decoration: none; box-shadow: 0 4px 0 #2a52b8; }
 </style>
 </head>
 <body>
 <main>
   <h1>Doodle Pad check</h1>
   <p class="sub">A plain page with no drawing app on it. Take a photo or screenshot of this screen and send it over.</p>
+
+  <div class="card">
+    <b>Tests</b> <span class="sub">Open each one, wait 10 seconds (or until it fails), then come back here.</span><br>
+    <a class="test" href="t1.html">Test 1</a>
+    <a class="test" href="t2.html">Test 2</a>
+    <a class="test" href="t3.html">Test 3</a>
+    <a class="test" href="./">The app</a>
+  </div>
 
   <div class="card"><table id="results"><tr><td>Status</td><td>checking…</td></tr></table></div>
 
@@ -34,7 +44,7 @@
   </div>
 
   <div class="card">
-    <b>This page's history</b> <span class="sub">(newest first, from earlier visits too)</span>
+    <b>History</b> <span class="sub">(this page, the tests and the app; newest first)</span>
     <pre id="log">–</pre>
   </div>
 
