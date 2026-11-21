@@ -33,6 +33,12 @@ button {
 }
 svg { display: block; overflow: visible; }
 
+/* readable by the browser, invisible on screen (Samsung Kids needs some page text) */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
 /* ---------- layout ---------- */
 #app {
   height: 100dvh; display: grid; gap: var(--gap);

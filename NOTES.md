@@ -45,6 +45,19 @@
   this. v7 is network-first with the untouched `fetch(e.request)` and falls back to the
   saved copy only when the network fails. **Don't go back to cache-first.** Unknown: whether
   offline (saved copy) works inside Samsung Kids on that tablet.
+- **THE ACTUAL CAUSE (found 2026-11-20 by bisecting with t1–t16): Samsung Kids' My Browser
+  on the newer tablet rejects pages with no readable text.** The page renders, then the
+  browser covers it with "Failed to go to website" while the page's JS keeps running
+  (app logs ran for 12s under the error). Results: the full app + a text banner (t9)
+  works. The app with its code doing nothing (t10) fails. The icon PNG fails. Every text
+  page works (diag, sports-daily, GitHub 404). The service-worker theories above
+  (v3→v7 changes) were wrong; the helper was never the problem. Doodle Pad's UI is
+  all icons and has no words, so the page **must always carry some text**. Visually hidden
+  text was enough (t15), and so was a small visible label (t16). The fix (v12) is the
+  `.sr-only` sentence in index.html. **Don't remove it.** Probably a Kids content-safety
+  screen of the page's text. The older tablet's Samsung Kids doesn't do it. The test pages
+  t1–t16 and check.html were deleted after the fix. diag.html and the app's start-up log
+  (`doodle-diag-log` in localStorage) stay as the troubleshooting tools.
 - **Local preview shows the old version** until the service worker updates. Unregister
   it and clear caches, or load twice.
 - **Crayon grain vs. paint bucket.** The crayon's holes have to stay below about 59%

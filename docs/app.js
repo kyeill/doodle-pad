@@ -3,14 +3,11 @@
 
 // ---------- troubleshooting log ----------
 // A short record of start-up and of how the page ends, kept in localStorage and shown
-// on diag.html. Added to find why Samsung Kids' browser on the newer tablet shows the
-// app briefly and then "Failed to go to website".
-// Test pages set window.DOODLE_TEST to switch parts off (noUpdates, noPersist).
-const TEST = window.DOODLE_TEST || {};
+// on diag.html. It found the Samsung Kids "no text on the page" problem (NOTES.md):
+// the page kept running under the browser's error screen.
 const LOG_KEY = 'doodle-diag-log';
 const bornAt = Date.now();
-const pageTag = (location.pathname.split('/').pop() || 'app') +
-  (Object.keys(TEST).length ? ' [' + Object.keys(TEST).join(',') + ']' : '');
+const pageTag = location.pathname.split('/').pop() || 'app';
 function dlog(msg) {
   try {
     const d = new Date();
@@ -28,10 +25,6 @@ window.addEventListener('beforeunload', () => dlog('page unloading (beforeunload
 document.addEventListener('visibilitychange', () => dlog('visibility: ' + document.visibilityState));
 window.addEventListener('error', e => dlog('error: ' + (e.message || (e.target && (e.target.src || e.target.href)) || e.type)), true);
 window.addEventListener('unhandledrejection', e => dlog('promise error: ' + (e.reason && e.reason.message || e.reason)));
-
-// test pages: stop start-up after a named stage, to find which stage upsets a browser
-const stopHere = name => { if (TEST.stopAt !== name) return false; dlog('stopped on purpose after stage: ' + name); return true; };
-if (stopHere('logger')) return;
 
 // ---------- settings ----------
 const COLORS = ['#e8413c', '#f7902b', '#ffd23f', '#8ac926', '#2a9d4b', '#4cc9f0',
@@ -51,10 +44,8 @@ const isApk = !!(window.Capacitor && (!window.Capacitor.isNativePlatform || wind
 if (isApk) document.documentElement.classList.add('apk');
 const stage = $('#stage');
 const canvas = $('#paper');
-// cpuCanvas: willReadFrequently keeps the canvas on the CPU instead of the graphics chip
-const ctx = canvas.getContext('2d', TEST.cpuCanvas ? { willReadFrequently: true } : undefined);
-const dpr = TEST.smallCanvas ? 1 : Math.min(window.devicePixelRatio || 1, MAX_DPR);
-if (TEST.cpuCanvas) dlog('drawing surface on the main processor (not graphics chip)');
+const ctx = canvas.getContext('2d');
+const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
 // log once the first frame has actually been put on screen
 requestAnimationFrame(() => requestAnimationFrame(() => dlog('first frame on screen after ' + lived())));
 
@@ -80,7 +71,6 @@ function paper() {
 
 // Grow the canvas to cover the stage (never shrink, so rotating keeps the drawing).
 function fitCanvas(minW = 0, minH = 0) {
-  if (TEST.noCanvas) return;   // test: leave the drawing surface at 0×0
   const r = stage.getBoundingClientRect();
   const W = Math.max(canvas.width, Math.ceil(r.width * dpr), minW);
   const H = Math.max(canvas.height, Math.ceil(r.height * dpr), minH);
@@ -359,8 +349,6 @@ undoBtn.addEventListener('click', () => {
   unsaved = true; scheduleSave(); updUndo();
 });
 
-if (stopHere('drawing')) return;
-
 // ---------- tool, colour, size pickers ----------
 function setInk(c) { color = c; document.documentElement.style.setProperty('--ink', c); }
 
@@ -373,9 +361,8 @@ document.querySelectorAll('.tool').forEach(b =>
   b.addEventListener('pointerdown', () => selectTool(b.dataset.tool)));
 
 const stickersEl = $('#stickers');
-const STICKER_LIST = TEST.noStickers ? [] : (window.STICKERS || []);
-if (TEST.noStickers) dlog('skipped: sticker tray');
-else dlog('making sticker tray' + (TEST.noStickerArt ? ' (no sticker pictures)' : ''));
+const STICKER_LIST = window.STICKERS || [];
+dlog('making sticker tray');
 let stickersMade = 0;
 STICKER_LIST.forEach((st, i) => {
   const b = document.createElement('button');
@@ -387,7 +374,6 @@ STICKER_LIST.forEach((st, i) => {
     stickersEl.querySelectorAll('.stk').forEach(x => x.classList.toggle('on', x === b));
   });
   stickersEl.appendChild(b);
-  if (TEST.noStickerArt) return;
   buildSticker(st.svg).then(art => {
     stickerArt[i] = art;
     dlog('sticker picture ' + (++stickersMade) + '/' + STICKER_LIST.length + (art ? '' : ' FAILED') + ' (' + st.name + ')');
@@ -414,8 +400,6 @@ document.querySelectorAll('.size').forEach(b => b.addEventListener('pointerdown'
   sizeIdx = +b.dataset.size;
   document.querySelectorAll('.size').forEach(x => x.classList.toggle('on', x === b));
 }));
-
-if (stopHere('pickers')) return;
 
 // ---------- hold-to-confirm buttons (toddler-proof) ----------
 function wiggle(el) { el.classList.remove('wiggle'); void el.offsetWidth; el.classList.add('wiggle'); }
@@ -581,8 +565,6 @@ async function share(rec) {
   setTimeout(() => URL.revokeObjectURL(a.href), 10000);
 }
 
-if (stopHere('storage')) return;
-
 // ---------- kid-proofing ----------
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('dblclick', e => e.preventDefault());
@@ -595,8 +577,6 @@ document.addEventListener('pointerdown', () => {
 }, true);
 window.addEventListener('popstate', () => { trapArmed = false; if (!gallery.hidden) closeGallery(); });
 
-if (stopHere('kidproof')) return;
-
 // ---------- start ----------
 (async () => {
   fitCanvas();
@@ -606,17 +586,12 @@ if (stopHere('kidproof')) return;
   dlog(cur ? 'reopening last drawing' : 'no last drawing');
   if (!(cur && await openPage(cur).catch(() => false))) startPage(cur || newId());
   dlog('drawing ready');
-  if (TEST.noPersist) dlog('skipped: keep-storage request');
-  else {
-    dlog('asking to keep storage permanently');
-    try {
-      if (navigator.storage && navigator.storage.persist) {
-        navigator.storage.persist().then(r => dlog('keep-storage answer: ' + r), e => dlog('keep-storage failed: ' + e));
-      }
-    } catch (e) { dlog('keep-storage threw: ' + e); }
-  }
-  if (TEST.noUpdates) dlog('skipped: offline helper + update check');
-  else setupUpdates();
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().then(r => dlog('keep-storage answer: ' + r), e => dlog('keep-storage failed: ' + e));
+    }
+  } catch (e) { dlog('keep-storage threw: ' + e); }
+  setupUpdates();
 })();
 
 // ---------- updates ----------
