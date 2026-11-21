@@ -1,7 +1,7 @@
 // Offline support. Network first (always the newest files when online), falling back
 // to the saved copy when offline or the network is too slow.
 // Bump VERSION when shipping changes; it also shows in the Pictures screen.
-const VERSION = 'doodle-v4';
+const VERSION = 'doodle-v5';
 const FILES = ['./', 'index.html', 'style.css', 'stickers.js', 'app.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 const TIMEOUT_MS = 4000;
 

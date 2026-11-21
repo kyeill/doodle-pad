@@ -1,0 +1,10 @@
+{
+  "name": "doodle-pad",
+  "private": true,
+  "description": "Wraps docs/ into an Android APK with Capacitor. Only used by the GitHub Actions build.",
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  }
+}

@@ -176,5 +176,6 @@ svg { display: block; overflow: visible; }
 }
 .mini svg { width: 60%; height: 60%; }
 .mini.share { left: 16px; }
+.apk .mini.share { display: none; }   /* Android WebView has no share sheet or downloads */
 .mini.del { right: 16px; }
 #empty { font-size: 22px; text-align: center; margin-top: 15vh; opacity: .7; }

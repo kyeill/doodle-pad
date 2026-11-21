@@ -14,6 +14,9 @@ const PALM_WIDTH = 90;              // touches wider than this (CSS px) are igno
 const FILL_TOLERANCE = 100;
 
 const $ = s => document.querySelector(s);
+// true inside the Android APK (Capacitor injects window.Capacitor); false on the website
+const isApk = !!(window.Capacitor && (!window.Capacitor.isNativePlatform || window.Capacitor.isNativePlatform()));
+if (isApk) document.documentElement.classList.add('apk');
 const stage = $('#stage');
 const canvas = $('#paper');
 const ctx = canvas.getContext('2d');
@@ -533,7 +536,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('dblclick', e => e.preventDefault());
 // When installed to the home screen, the Android back gesture closes the gallery
 // instead of the app. Chrome only honours this after a tap, so it re-arms on each touch.
-const installed = matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+const installed = isApk || matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
 let trapArmed = false;
 document.addEventListener('pointerdown', () => {
   if (installed && !trapArmed) { history.pushState({ doodle: 1 }, ''); trapArmed = true; }
@@ -555,6 +558,7 @@ window.addEventListener('popstate', () => { trapArmed = false; if (!gallery.hidd
 // version every time the app comes back on screen. When one takes over, save the
 // drawing and reload (never mid-stroke). The drawing comes straight back.
 function setupUpdates() {
+  if (isApk) { $('#version').textContent = 'app'; return; }  // the APK carries its own files
   if (!('serviceWorker' in navigator)) return;
   const hadController = !!navigator.serviceWorker.controller;
   let reloading = false;

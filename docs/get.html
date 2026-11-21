@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f7f0e4">
+<title>Get Doodle Pad</title>
+<link rel="icon" href="icon-192.png">
+<style>
+  :root { --bg: #f7f0e4; --line: #3d3a4f; --accent: #ff7a59; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--line);
+    font-family: ui-rounded, "Nunito", "Segoe UI", system-ui, sans-serif;
+    background-image: radial-gradient(rgba(61, 58, 79, .07) 1.5px, transparent 1.6px);
+    background-size: 22px 22px;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 40px 16px 60px; }
+  header { display: flex; align-items: center; gap: 18px; margin-bottom: 28px; }
+  header img { width: 84px; height: 84px; border-radius: 22px; box-shadow: 0 6px 18px rgba(80, 60, 30, .15); }
+  h1 { margin: 0; font-size: 34px; font-weight: 800; }
+  header p { margin: 4px 0 0; opacity: .7; }
+  .download {
+    display: block; text-align: center; text-decoration: none; color: #fff;
+    background: var(--accent); border-radius: 20px; padding: 22px 16px;
+    font-size: 24px; font-weight: 800;
+    box-shadow: 0 5px 0 #d9583a, 0 10px 24px rgba(255, 122, 89, .3);
+  }
+  .download:active { transform: translateY(3px); box-shadow: 0 2px 0 #d9583a; }
+  .card {
+    background: #fff; border-radius: 20px; padding: 6px 22px 10px; margin-top: 22px;
+    box-shadow: 0 4px 0 #e6d9c3, 0 8px 18px rgba(80, 60, 30, .08);
+  }
+  h2 { font-size: 20px; margin: 18px 0 8px; }
+  ol, ul { padding-left: 22px; line-height: 1.55; }
+  li { margin-bottom: 6px; }
+  .small { font-size: 14px; opacity: .7; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icon-192.png" alt="">
+    <div>
+      <h1>Doodle Pad</h1>
+      <p>Drawing and animal stickers for little kids. Android app.</p>
+    </div>
+  </header>
+
+  <a class="download" href="https://github.com/kyeill/doodle-pad/releases/latest/download/doodle-pad.apk">Download the app</a>
+
+  <section class="card">
+    <h2>Install it</h2>
+    <ol>
+      <li>Tap <b>Download the app</b>. Chrome may warn that the file can be harmful. Tap <b>Download anyway</b>.</li>
+      <li>When it finishes, tap <b>Open</b> (or open <i>doodle-pad.apk</i> from My Files → Downloads).</li>
+      <li>The first time, Android asks to allow installing apps from Chrome (or My Files). Tap <b>Settings</b>, turn on <b>Allow from this source</b>, then go back.</li>
+      <li>Tap <b>Install</b>. If Play Protect asks about an unknown app, tap <b>More details → Install anyway</b>.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Updating</h2>
+    <p>Download and install again. It replaces the old version and keeps the drawings.</p>
+  </section>
+
+  <section class="card">
+    <h2>Samsung Kids</h2>
+    <p>Once installed, add <b>Doodle Pad</b> to Samsung Kids' allowed apps in its parental controls. It doesn't need a browser.</p>
+  </section>
+
+  <p class="small">Drawings are saved inside the app on this tablet only. Uninstalling the app deletes them.
+  Drawings made in the web version don't move over to the app.</p>
+</main>
+</body>
+</html>

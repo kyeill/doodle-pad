@@ -1,0 +1,8 @@
+{
+  "appId": "com.kyeill.doodlepad",
+  "appName": "Doodle Pad",
+  "webDir": "docs",
+  "android": {
+    "backgroundColor": "#f7f0e4"
+  }
+}

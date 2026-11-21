@@ -1,0 +1,84 @@
+# Builds the Android APK from docs/ and publishes it as a GitHub Release.
+# Fixed download link: https://github.com/kyeill/doodle-pad/releases/latest/download/doodle-pad.apk
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'android-overrides/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'capacitor.config.json'
+      - '.github/workflows/apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Capacitor
+        run: npm install --no-audit --no-fund
+
+      - name: Create the Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: App icon and splash
+        continue-on-error: true   # a missing icon is not worth failing the build over
+        run: npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#f7f0e4' --splashBackgroundColor '#f7f0e4'
+
+      - name: Tablet settings (full screen, landscape, version number)
+        run: |
+          cp android-overrides/MainActivity.java android/app/src/main/java/com/kyeill/doodlepad/MainActivity.java
+          sed -i '0,/<activity/s//<activity android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
+          sed -i -E "s/versionCode [0-9]+/versionCode ${{ github.run_number }}/; s/versionName \"[^\"]*\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -n "screenOrientation" android/app/src/main/AndroidManifest.xml
+          grep -nE "versionCode|versionName" android/app/build.gradle
+
+      - name: Build
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Sign
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/ks.p12"
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/zipalign" -f -p 4 android/app/build/outputs/apk/release/app-release-unsigned.apk aligned.apk
+          "$BT/apksigner" sign --ks "$RUNNER_TEMP/ks.p12" --ks-type PKCS12 \
+            --ks-pass env:KS_PASS --key-pass env:KS_PASS --out doodle-pad.apk aligned.apk
+          rm -f "$RUNNER_TEMP/ks.p12"
+          "$BT/apksigner" verify --print-certs doodle-pad.apk
+          ls -la doodle-pad.apk
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "apk-${{ github.run_number }}" doodle-pad.apk \
+            --title "Doodle Pad 1.${{ github.run_number }}" \
+            --notes "Built from ${GITHUB_SHA::7}. Install on the tablet from https://kyeill.github.io/doodle-pad/get.html" \
+            --latest
